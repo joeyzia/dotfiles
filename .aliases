@@ -146,3 +146,14 @@ alias reload="exec ${SHELL} -l"
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
+
+# Go aliases
+alias golint="golangci-lint run ./..."
+alias gotidy="go mod tidy"
+alias goupdate="go get -u ./..."
+alias gotest="go test ./..."
+alias gobuild="go build ./..."
+alias gogen="go generate ./..."
+
+# Node alises
+alias pn=pnpm
