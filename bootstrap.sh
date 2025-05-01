@@ -7,7 +7,6 @@ git pull origin main;
 ./brew.sh;
 ./oh-my-zsh.sh;
 ./node.sh;
-./go.sh;
 
 function doIt() {
 	rsync --exclude ".git/" \
