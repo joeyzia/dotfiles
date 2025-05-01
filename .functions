@@ -137,3 +137,29 @@ function update_golangci_lint() {
   echo "updating to golangci lint version $@"
   brew install golangci-lint@$@
 }
+
+# Git SSH Key Setup
+function git_ssh_key() {
+	# Prompt for email input
+	read -p "Enter your email for the SSH key: " email
+
+	# Generate SSH key
+	ssh-keygen -t rsa -b 4096 -C "$email"
+
+	# Start the ssh-agent in the background
+	eval "$(ssh-agent -s)"
+
+	# Add your SSH private key to the ssh-agent
+	ssh-add ~/.ssh/id_rsa
+
+	# Output the public key
+	cat ~/.ssh/id_rsa.pub
+
+	# Copy the public key to clipboard (macOS specific)
+	if command -v pbcopy &> /dev/null; then
+		cat ~/.ssh/id_rsa.pub | pbcopy
+		echo "Public key copied to clipboard."
+	else
+		echo "pbcopy command not found. Please copy the key manually."
+	fi
+}

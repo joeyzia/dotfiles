@@ -8,6 +8,8 @@ git pull origin main;
 ./oh-my-zsh.sh;
 ./node.sh;
 
+git_ssh_key()
+
 function doIt() {
 	rsync --exclude ".git/" \
 		--exclude ".DS_Store" \
@@ -29,3 +31,4 @@ else
 	fi;
 fi;
 unset doIt;
+
