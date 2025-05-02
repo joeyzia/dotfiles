@@ -8,8 +8,6 @@ git pull origin main;
 ./oh-my-zsh.sh;
 ./node.sh;
 
-git_ssh_key()
-
 function doIt() {
 	rsync --exclude ".git/" \
 		--exclude ".DS_Store" \
@@ -20,6 +18,8 @@ function doIt() {
 		-avh --no-perms . ~;
 	source ~/.zprofile;
 }
+
+git_ssh_key
 
 if [ "$1" == "--force" -o "$1" == "-f" ]; then
 	doIt;

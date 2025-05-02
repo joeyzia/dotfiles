@@ -33,10 +33,8 @@ brew install gnu-sed --with-default-names
 # Install a modern version of Zsh.
 brew install zsh
 
-# Install `wget` with IRI support.
-brew install wget --with-iri
-
-# Install `curl`
+# Install wget and curl.
+brew install wget
 brew install curl
 
 # Install more recent versions of some macOS tools.
