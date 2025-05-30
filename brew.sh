@@ -57,7 +57,7 @@ brew install fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # Applications.
-brew install --cask arc
+brew install --cask chrome
 brew install --cask visual-studio-code
 brew install --cask github
 brew install --cask spotify
