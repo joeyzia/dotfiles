@@ -138,10 +138,13 @@ function update_golangci_lint() {
   brew install golangci-lint@$@
 }
 
-# Git SSH Key Setup
-function git_ssh_key() {
+# Git SSH and GPG Key Setup
+function git_key_setup() {
 	# Prompt for email input
-	read -p "Enter your email for the SSH key: " email
+	echo -e "\033[1;36mEnter your email for the SSH key:\033[0m "
+	read email
+
+	 git config --global user.email email
 
 	# Generate SSH key
 	ssh-keygen -t rsa -b 4096 -C "$email"
@@ -162,4 +165,6 @@ function git_ssh_key() {
 	else
 		echo "pbcopy command not found. Please copy the key manually."
 	fi
+
+	echo -e "\033[1;32mSSH key setup complete. Add the public key to your Git hosting service.\033[0m"
 }
