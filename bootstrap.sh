@@ -4,6 +4,7 @@ cd "$(dirname "${BASH_SOURCE}")";
 
 git pull origin main;
 
+./git.sh
 ./brew.sh;
 ./oh-my-zsh.sh;
 ./node.sh;
@@ -19,16 +20,15 @@ function doIt() {
 	source ~/.zprofile;
 }
 
-git_ssh_key
-
-if [ "$1" == "--force" -o "$1" == "-f" ]; then
+if [ "$1" = "--force" ] || [ "$1" = "-f" ]; then
 	doIt;
 else
-	read -p "This may overwrite existing files in your home directory. Are you sure? (y/n) " -n 1;
-	echo "";
+	echo -e "\033[1;33mThis may overwrite existing files in your home directory. Are you sure? (y/n) \033[0m"
+	read REPLY
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		doIt;
 	fi;
 fi;
 unset doIt;
 
+git_ssh_key

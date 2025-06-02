@@ -138,10 +138,13 @@ function update_golangci_lint() {
   brew install golangci-lint@$@
 }
 
-# Git SSH Key Setup
-function git_ssh_key() {
+# Git SSH and GPG Key Setup
+function git_key_setup() {
 	# Prompt for email input
-	read -p "Enter your email for the SSH key: " email
+	echo -e "\033[1;36mEnter your email for the SSH key:\033[0m "
+	read email
+
+	 git config --global user.email email
 
 	# Generate SSH key
 	ssh-keygen -t rsa -b 4096 -C "$email"
@@ -162,4 +165,26 @@ function git_ssh_key() {
 	else
 		echo "pbcopy command not found. Please copy the key manually."
 	fi
+
+	echo -e "\033[1;32mSSH key setup complete. Add the public key to your Git hosting service.\033[0m"
+	echo -e "\033[1;32mContinue with GPG Key Set Up? (y/n)\033[0m"
+	read -r continue
+
+	if [[ "$continue" =~ ^[Yy]$ ]]; then
+		gpg --full-generate-key
+		gpg --list-secret-keys --keyid-format=long
+
+		echo -e "\033[1;36mEnter the GPG key ID you want to use for signing commits:\033[0m "
+		read gpg_key_id
+		
+		gpg --armor --export "$gpg_key_id" | pbcopy
+		echo -e "\033[1;32mGPG public key copied to clipboard. Please add it to your Git hosting service.\033[0m"
+		git config --global user.signingkey "$gpg_key_id"
+		git config --global commit.gpgsign true
+
+	else
+		echo -e "\033[1;31mSkipping GPG Key setup.\033[0m"
+	fi
+
+	echo -e "\033[1;32mGit SSH and GPG Key setup completed.\033[0m"
 }
