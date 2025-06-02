@@ -73,6 +73,7 @@ brew install --cask spotify
 brew install --cask postman
 brew install --cask docker
 brew install --cask slack
+brew install --cask pgadmin4
 
 # Development
 ## Go
