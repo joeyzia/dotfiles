@@ -66,7 +66,7 @@ brew install fzf
 
 # Applications.
 brew install --cask rectangle
-brew install --cask google-chrome
+brew install --cask zen
 brew install --cask visual-studio-code
 brew install --cask github
 brew install --cask spotify
