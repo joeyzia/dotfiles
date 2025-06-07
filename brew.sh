@@ -78,6 +78,7 @@ brew install --cask pgadmin4
 # Development
 ## Go
 brew install go
+brew install golangci/tap/golangci-lint
 
 ## Node
 brew install node
