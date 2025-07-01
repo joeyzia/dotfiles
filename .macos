@@ -82,7 +82,7 @@ sudo defaults write /Library/Preferences/com.apple.loginwindow AdminHostInfo Hos
 # Disable automatic capitalization as it’s annoying when typing code
 defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
 
-# Disable smart dashes as they’re annoying when typing code
+# Enable smart dashes as they’re amazing when typing and shouldn't come out when coding
 defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool true
 
 # Disable automatic period substitution as it’s annoying when typing code
