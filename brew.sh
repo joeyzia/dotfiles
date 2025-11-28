@@ -8,7 +8,7 @@ if ! command -v brew &>/dev/null; then
 	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 	echo >> /Users/"$USER"/.zprofile
-    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/"$USER"/.zprofile 
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/"$USER"/.zprofile
     eval "$(/opt/homebrew/bin/brew shellenv)"
 else
 	echo "Homebrew is already installed. Proceeding..."
@@ -42,10 +42,11 @@ brew install wget
 brew install curl
 
 # Install more recent versions of some macOS tools.
-brew install vim 
+brew install vim
 brew install grep
 brew install openssh
 brew install screen
+brew install maccy
 
 # Install font tools.
 brew tap bramstein/webfonttools
