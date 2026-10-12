@@ -1,0 +1,45 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash $HOME/.claude/statusline.sh"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/hooks/no-explanatory-comments.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/notify-done.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/notify-done.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "theme": "dark-daltonized",
+  "tui": "fullscreen",
+  "advisorModel": "opus",
+  "autoCompactEnabled": false,
+  "skipWorkflowUsageWarning": true,
+  "skipAutoPermissionPrompt": true
+}

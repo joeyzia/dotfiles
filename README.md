@@ -75,6 +75,23 @@ When setting up a new Mac, you may want to install some common [Homebrew](https:
 
 Some of the functionality of these dotfiles depends on formulae installed by `brew.sh`. If you don’t plan to run `brew.sh`, you should look carefully through the script and manually install any particularly important ones. A good example is Bash/Git completion: the dotfiles use a special version from Homebrew.
 
+### Claude Code
+
+`.claude/` holds my Claude Code setup. `sync.sh` copies it into `~/.claude` along with everything else:
+
+- `CLAUDE.md` — global instructions: the response contract, scope discipline, verification, git workflow, and Go style rules (no positional indexing at call sites, minimal comments, vertical whitespace)
+- `statusline.sh` — status line showing model, directory, branch, session cost, month-to-date cost (via `ccusage`), and a context-usage bar. Needs `jq`, and Node for the monthly figure. macOS `stat` — on Linux change `stat -f %m` to `stat -c %Y`
+- `hooks/` — `no-explanatory-comments.py` (flags explanatory comments after edits) and `notify-done.sh` (Ghostty desktop notification when a turn finishes or needs input)
+- `agents/` — codebase locator / analyzer / pattern-finder and a web researcher
+- `skills/` — `go-spf13`, `git-commit`, `explain-code`, `research-codebase`, `findings`, `journal-update`, `journal-preflight`
+- `settings.json` — the status line, the hooks above, and UI preferences only
+
+Per-machine setup:
+
+- **`journal-update` and `findings`** — edit the configuration block at the top of each skill (vault path, git root, GitHub accounts, Jira project, Slack channels).
+- **`settings.json` overwrites `~/.claude/settings.json`.** On a machine that already has plugins, MCP marketplaces or other settings, merge by hand instead of syncing over it.
+- Plugins, MCP servers and memory are not tracked here — they're per job.
+
 ## Original Author
 
 | [![twitter/mathias](http://gravatar.com/avatar/24e08a9ea84deb17ae121074d0f17125?s=70)](http://twitter.com/mathias "Follow @mathias on Twitter") |
