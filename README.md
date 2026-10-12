@@ -80,7 +80,7 @@ Some of the functionality of these dotfiles depends on formulae installed by `br
 `.claude/` holds my Claude Code setup. `sync.sh` copies it into `~/.claude` along with everything else:
 
 - `CLAUDE.md` — global instructions: the response contract, scope discipline, verification, git workflow, and Go style rules (no positional indexing at call sites, minimal comments, vertical whitespace)
-- `statusline.sh` — status line showing model, directory, branch, session cost, month-to-date cost (via `ccusage`), and a context-usage bar. Needs `jq`, and Node for the monthly figure. macOS `stat` — on Linux change `stat -f %m` to `stat -c %Y`
+- `statusline.sh` — status line showing model, directory, branch, a context-usage bar, and subscription usage for the 5-hour and 7-day windows with time until reset. Needs `jq`
 - `hooks/` — `no-explanatory-comments.py` (flags explanatory comments after edits) and `notify-done.sh` (Ghostty desktop notification when a turn finishes or needs input)
 - `agents/` — codebase locator / analyzer / pattern-finder and a web researcher
 - `skills/` — `go-spf13`, `git-commit`, `explain-code`, `research-codebase`, `findings`, `journal-update`, `journal-preflight`
