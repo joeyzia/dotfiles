@@ -5,17 +5,65 @@
 input=$(cat)
 
 # Parse all fields in one jq call, tab-separated
-IFS=$'\t' read -r model_raw cwd used_pct cost_raw five_hour_raw <<< "$(
+IFS=$'\t' read -r model_raw cwd used_pct five_hour_raw five_hour_reset seven_day_raw seven_day_reset <<< "$(
   echo "$input" | jq -r '
     [
       (.model.display_name // ""),
       (.workspace.current_dir // ""),
       (.context_window.used_percentage // ""),
-      (.cost.total_cost_usd // ""),
-      (.rate_limits.five_hour.used_percentage // "")
+      (.rate_limits.five_hour.used_percentage // ""),
+      (.rate_limits.five_hour.resets_at // ""),
+      (.rate_limits.seven_day.used_percentage // ""),
+      (.rate_limits.seven_day.resets_at // "")
     ] | @tsv
   '
 )"
+
+pct_color() {
+  if [ "$1" -le 50 ]; then
+    printf '\033[32m'
+  elif [ "$1" -le 80 ]; then
+    printf '\033[33m'
+  else
+    printf '\033[31m'
+  fi
+}
+
+time_until() {
+  local secs=$(( $1 - $(date +%s) ))
+
+  [ "$secs" -le 0 ] && return
+
+  local d=$(( secs / 86400 )) h=$(( secs % 86400 / 3600 )) m=$(( secs % 3600 / 60 ))
+
+  if [ "$d" -gt 0 ]; then
+    printf '%dd%dh' "$d" "$h"
+  elif [ "$h" -gt 0 ]; then
+    printf '%dh%dm' "$h" "$m"
+  else
+    printf '%dm' "$m"
+  fi
+}
+
+usage_window() {
+  local label="$1" pct_raw="$2" reset="$3"
+
+  [ -z "$pct_raw" ] || [ "$pct_raw" = "null" ] && return
+
+  local pct
+  pct=$(printf '%.0f' "$pct_raw")
+
+  local str
+  str=$(printf '%s%s:%d%%\033[0m' "$(pct_color "$pct")" "$label" "$pct")
+
+  if [ -n "$reset" ] && [ "$reset" != "null" ]; then
+    local left
+    left=$(time_until "${reset%.*}")
+    [ -n "$left" ] && str="${str}$(printf ' \033[2m↻%s\033[0m' "$left")"
+  fi
+
+  printf '%s' "$str"
+}
 
 # ── Model: strip "Claude " prefix ─────────────────────────────────────────────
 model="${model_raw#Claude }"
@@ -30,12 +78,6 @@ if [ -n "$cwd" ]; then
   branch=$(git --no-optional-locks -C "$cwd" branch --show-current 2>/dev/null)
 fi
 
-# ── Cost ──────────────────────────────────────────────────────────────────────
-cost_str=""
-if [ -n "$cost_raw" ] && [ "$cost_raw" != "null" ]; then
-  cost_str=$(printf '\033[33m$%.2f\033[0m' "$cost_raw")
-fi
-
 # ── Context bar ───────────────────────────────────────────────────────────────
 ctx_str=""
 if [ -n "$used_pct" ] && [ "$used_pct" != "null" ]; then
@@ -44,116 +86,33 @@ if [ -n "$used_pct" ] && [ "$used_pct" != "null" ]; then
   [ $filled -gt 10 ] && filled=10
   empty=$(( 10 - filled ))
 
-  # Color thresholds: green ≤50, yellow 51-80, red >80
-  if [ "$pct_int" -le 50 ]; then
-    bar_color='\033[32m'   # green
-  elif [ "$pct_int" -le 80 ]; then
-    bar_color='\033[33m'   # yellow
-  else
-    bar_color='\033[31m'   # red
-  fi
-
   bar=""
   for ((i=0; i<filled; i++)); do bar="${bar}█"; done
   for ((i=0; i<empty; i++));  do bar="${bar}░"; done
 
-  ctx_str=$(printf "${bar_color}[%s]\033[0m %d%%" "$bar" "$pct_int")
+  ctx_str=$(printf "%s[%s]\033[0m %d%%" "$(pct_color "$pct_int")" "$bar" "$pct_int")
 fi
 
-# ── 5-hour rate limit ─────────────────────────────────────────────────────────
-rate_str=""
-if [ -n "$five_hour_raw" ] && [ "$five_hour_raw" != "null" ]; then
-  rate_pct=$(printf '%.0f' "$five_hour_raw")
-  rate_str=$(printf '5h:%d%%' "$rate_pct")
-fi
-
-# ── Monthly ccusage cost (cached, background-refreshed) ───────────────────────
-MONTHLY_CACHE="/tmp/claude-statusline-monthly.cache"
-CACHE_TTL=600   # 10 minutes in seconds
-now=$(date +%s)
-
-monthly_str=""
-if [ -f "$MONTHLY_CACHE" ] && [ -s "$MONTHLY_CACHE" ]; then
-  cache_age=$(( now - $(stat -f %m "$MONTHLY_CACHE" 2>/dev/null || echo "$now") ))
-
-  # Stale — spawn background refresh (guard against pile-up via .tmp mtime)
-  if [ "$cache_age" -gt "$CACHE_TTL" ]; then
-    tmp_age=999999
-    if [ -f "${MONTHLY_CACHE}.tmp" ]; then
-      tmp_age=$(( now - $(stat -f %m "${MONTHLY_CACHE}.tmp" 2>/dev/null || echo 0) ))
-    fi
-    if [ "$tmp_age" -gt 60 ]; then
-      ( npx -y ccusage@latest monthly --json > "${MONTHLY_CACHE}.tmp" 2>/dev/null \
-          && mv "${MONTHLY_CACHE}.tmp" "$MONTHLY_CACHE" ) &
-      disown 2>/dev/null || true
-    fi
-  fi
-
-  # Render from whatever is in the cache right now (may be up to TTL old — fine)
-  current_month=$(date +%Y-%m)
-  mo_cost=$(jq -r --arg month "$current_month" \
-    '[.monthly[] | select(.period == $month) | select(.metadata.agents | index("claude"))] | map(.totalCost) | add // 0' \
-    "$MONTHLY_CACHE" 2>/dev/null)
-
-  if [ -n "$mo_cost" ] && [ "$mo_cost" != "null" ]; then
-    monthly_str=$(printf '\033[33m~mo:$%.2f\033[0m' "$mo_cost")
-  fi
-else
-  # No cache yet — show placeholder and kick off first fetch
-  monthly_str="~mo:…"
-  tmp_age=999999
-  if [ -f "${MONTHLY_CACHE}.tmp" ]; then
-    tmp_age=$(( now - $(stat -f %m "${MONTHLY_CACHE}.tmp" 2>/dev/null || echo 0) ))
-  fi
-  if [ "$tmp_age" -gt 60 ]; then
-    ( npx -y ccusage@latest monthly --json > "${MONTHLY_CACHE}.tmp" 2>/dev/null \
-        && mv "${MONTHLY_CACHE}.tmp" "$MONTHLY_CACHE" ) &
-    disown 2>/dev/null || true
-  fi
-fi
+# ── Subscription usage windows ────────────────────────────────────────────────
+five_hour_str=$(usage_window 5h "$five_hour_raw" "$five_hour_reset")
+seven_day_str=$(usage_window 7d "$seven_day_raw" "$seven_day_reset")
 
 # ── Assemble output ───────────────────────────────────────────────────────────
 SEP=$(printf '\033[2;37m │ \033[0m')   # dim grey separator
 
 out=""
 
-# Model
-[ -n "$model" ] && out="${model}"
-
-# Dir
-if [ -n "$dir" ]; then
+append() {
+  [ -z "$1" ] && return
   [ -n "$out" ] && out="${out}${SEP}"
-  out="${out}$(printf '\033[36m%s\033[0m' "$dir")"
-fi
+  out="${out}$1"
+}
 
-# Branch
-if [ -n "$branch" ]; then
-  [ -n "$out" ] && out="${out}${SEP}"
-  out="${out}$(printf '\033[35m%s\033[0m' "$branch")"
-fi
-
-# Cost
-if [ -n "$cost_str" ]; then
-  [ -n "$out" ] && out="${out}${SEP}"
-  out="${out}${cost_str}"
-fi
-
-# Monthly cost
-if [ -n "$monthly_str" ]; then
-  [ -n "$out" ] && out="${out}${SEP}"
-  out="${out}${monthly_str}"
-fi
-
-# Context bar
-if [ -n "$ctx_str" ]; then
-  [ -n "$out" ] && out="${out}${SEP}"
-  out="${out}${ctx_str}"
-fi
-
-# Rate limit
-if [ -n "$rate_str" ]; then
-  [ -n "$out" ] && out="${out}${SEP}"
-  out="${out}${rate_str}"
-fi
+append "$model"
+append "$(printf '\033[36m%s\033[0m' "$dir")"
+[ -n "$branch" ] && append "$(printf '\033[35m%s\033[0m' "$branch")"
+append "$ctx_str"
+append "$five_hour_str"
+append "$seven_day_str"
 
 printf '%b\n' "$out"
