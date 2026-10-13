@@ -27,9 +27,9 @@ You are tasked with creating git commits for the changes made during this sessio
 
 3. **Plan your commit(s):**
    - Group files by logical concern, not by directory
-   - Draft clear commit messages — imperative mood, focused on *why*
+   - Draft Conventional Commits messages — `<type>(<scope>): <subject>`, imperative, lowercase, focused on *why* (see "Commit Messages" in `~/.claude/CLAUDE.md`)
    - For multi-commit plans: ensure each commit builds and makes sense on its own
-   - Follow the repo's commit conventions (check CLAUDE.md or recent `git log`)
+   - Take scopes from recent `git log`; a repo-enforced format (commitlint, CONTRIBUTING) overrides Conventional Commits
 
 4. **Present your plan to the user:**
    - List the files for each commit

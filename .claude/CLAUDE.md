@@ -80,6 +80,20 @@ multi-step sequences where compression risks misread.
 - Branch off the repo's actual default branch
   (`gh repo view --json defaultBranchRef`), not an assumed `main`.
 
+## Commit Messages
+
+- Use Conventional Commits for every commit: `<type>(<scope>): <subject>`.
+  Example: `fix(loyalty): reject AddTierPoints responses with != 1 txn`.
+- Types: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `build`, `ci`,
+  `chore`, `style`, `revert`.
+- Scope is optional — use the package, service or area touched. Reuse scopes
+  already in `git log`.
+- Subject: imperative, lowercase, no trailing period, ≤72 chars.
+- Breaking change: `!` after type/scope plus a `BREAKING CHANGE:` footer.
+- PR titles follow the same format (squash merges make the title the commit).
+- If a repo enforces a different format (commitlint config, CONTRIBUTING), the
+  repo wins.
+
 ## Commit Attribution
 
 - **NEVER add Co-Authored-By lines or Claude attribution to commits**
