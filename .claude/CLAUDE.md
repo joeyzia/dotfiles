@@ -79,6 +79,10 @@ multi-step sequences where compression risks misread.
   first edit.
 - Branch off the repo's actual default branch
   (`gh repo view --json defaultBranchRef`), not an assumed `main`.
+- **Never open a PR, issue or comment on a repo I don't own unless I name that
+  repo.** Many of my repos are forks, and `gh` defaults to the upstream parent.
+  Always pass `--repo <owner>/<repo>` to `gh pr create` (and `--head` for
+  forks), and check `gh repo view --json nameWithOwner,isFork,parent` first.
 
 ## Commit Messages
 
