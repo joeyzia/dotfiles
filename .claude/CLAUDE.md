@@ -79,6 +79,24 @@ multi-step sequences where compression risks misread.
   first edit.
 - Branch off the repo's actual default branch
   (`gh repo view --json defaultBranchRef`), not an assumed `main`.
+- **Never open a PR, issue or comment on a repo I don't own unless I name that
+  repo.** Many of my repos are forks, and `gh` defaults to the upstream parent.
+  Always pass `--repo <owner>/<repo>` to `gh pr create` (and `--head` for
+  forks), and check `gh repo view --json nameWithOwner,isFork,parent` first.
+
+## Commit Messages
+
+- Use Conventional Commits for every commit: `<type>(<scope>): <subject>`.
+  Example: `fix(loyalty): reject AddTierPoints responses with != 1 txn`.
+- Types: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `build`, `ci`,
+  `chore`, `style`, `revert`.
+- Scope is optional — use the package, service or area touched. Reuse scopes
+  already in `git log`.
+- Subject: imperative, lowercase, no trailing period, ≤72 chars.
+- Breaking change: `!` after type/scope plus a `BREAKING CHANGE:` footer.
+- PR titles follow the same format (squash merges make the title the commit).
+- If a repo enforces a different format (commitlint config, CONTRIBUTING), the
+  repo wins.
 
 ## Commit Attribution
 
